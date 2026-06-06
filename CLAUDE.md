@@ -145,8 +145,20 @@ para implementar: [nombre de la regla RN-XX]"
   ADR-004 (Resolucion de import circular entre modelos)
   ADR-005 (Email como operacion best-effort)
 
+- Endpoints FastAPI (app/routers/requirements.py)
+  POST /requerimientos (crear)
+  GET /requerimientos (listar con filtros opcionales)
+  PATCH /requerimientos/{id}/estado (cambiar estado)
+  app/schemas/api_schemas.py: modelos HTTP desacoplados
+  tests/integration/conftest.py + test_endpoints.py
+  5 tests de integracion nuevos
+  Total: 31 tests en verde (26 unit + 5 integration)
+
 ### Pendiente - siguiente ciclo TDD
-- Endpoints FastAPI — exponer RN-01 a RN-07 via API REST
+- GET /requerimientos con filtros reales (estado, tipo, prioridad)
+  El endpoint existe pero devuelve lista vacia (stub)
+- Persistencia SQLAlchemy reemplaza store en memoria
+- Autenticacion JWT con roles (RolUsuario en token)
 
 ### Pendiente - ciclos siguientes
 - Escenarios Gherkin ejecutables (behave)
