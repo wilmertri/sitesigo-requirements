@@ -10,6 +10,7 @@ from app.models.requirement import EstadoRequerimiento, Requerimiento, RolUsuari
 from app.models.requirement_db import RequerimientooDB
 from app.repositories.requirement_repository import RequirementRepository
 from app.schemas.api_schemas import (
+    ArchivarBody,
     CambiarEstadoBody,
     CrearRequirementBody,
     RequirementResponse,
@@ -110,4 +111,21 @@ def cambiar_estado(req_id: int, body: CambiarEstadoBody, db: Session = Depends(g
         estado_anterior=estado_anterior,
         estado_nuevo=nuevo_estado.value,
     )
+    return RequirementResponse.from_orm_model(orm_req)
+
+
+@router.delete("/{req_id}", response_model=RequirementResponse)
+def archivar_requerimiento(req_id: int, body: ArchivarBody, db: Session = Depends(get_db)):
+    if RequirementRepository.obtener_por_id(db, req_id) is None:
+        raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+
+    try:
+        orm_req = RequirementRepository.archivar(
+            db, req_id, body.usuario_id, body.rol_usuario
+        )
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
     return RequirementResponse.from_orm_model(orm_req)

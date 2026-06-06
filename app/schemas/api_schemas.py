@@ -22,6 +22,11 @@ class CambiarEstadoBody(BaseModel):
     rol_usuario: str
 
 
+class ArchivarBody(BaseModel):
+    usuario_id: int
+    rol_usuario: str
+
+
 class RequirementResponse(BaseModel):
     id: int
     titulo: str

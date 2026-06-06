@@ -25,6 +25,7 @@ class EstadoRequerimiento(str, Enum):
     resuelto = "Resuelto"
     cerrado = "Cerrado"
     rechazado = "Rechazado"
+    archivado = "Archivado"
 
 
 @dataclass

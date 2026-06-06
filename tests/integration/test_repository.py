@@ -88,6 +88,30 @@ def test_listar_filtrado_por_estado(db):
     assert len(nuevos) == 2
 
 
+def test_archivado_no_aparece_en_listado_normal(db):
+    for i in range(2):
+        datos = RequirementCreate(
+            titulo=f"Activo {i}",
+            descripcion=f"Desc {i}",
+            tipo=TipoRequerimiento.bug,
+            prioridad=Prioridad.media,
+        )
+        RequirementRepository.crear(db, datos, autor_id=1, autor_rol="funcionario")
+
+    datos_arch = RequirementCreate(
+        titulo="Para archivar",
+        descripcion="Sera archivado",
+        tipo=TipoRequerimiento.bug,
+        prioridad=Prioridad.baja,
+    )
+    req_arch = RequirementRepository.crear(db, datos_arch, autor_id=1, autor_rol="administrador")
+    RequirementRepository.archivar(db, req_arch.id, usuario_id=99, rol_usuario="administrador")
+
+    lista = RequirementRepository.listar(db)
+
+    assert len(lista) == 2
+
+
 def test_guardar_cambio_estado_crea_historial(db):
     req = RequirementRepository.crear(
         db, _DATOS_VALIDOS, autor_id=1, autor_rol="administrador"

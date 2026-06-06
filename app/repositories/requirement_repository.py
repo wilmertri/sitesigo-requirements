@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.models.requirement_db import CambioEstadoDB, RequerimientooDB
 from app.schemas.requirement_schema import RequirementCreate
+from app.services.requirement_service import RequirementService
 
 
 class RequirementRepository:
@@ -47,6 +48,8 @@ class RequirementRepository:
         query = db.query(RequerimientooDB)
         if estado:
             query = query.filter(RequerimientooDB.estado == estado)
+        else:
+            query = query.filter(RequerimientooDB.estado != "Archivado")
         if tipo:
             query = query.filter(RequerimientooDB.tipo == tipo)
         if prioridad:
@@ -74,6 +77,30 @@ class RequirementRepository:
         db.commit()
         db.refresh(cambio)
         return cambio
+
+    @staticmethod
+    def archivar(
+        db: Session,
+        requerimiento_id: int,
+        usuario_id: int,
+        rol_usuario: str,
+    ) -> Optional[RequerimientooDB]:
+        orm_req = RequirementRepository.obtener_por_id(db, requerimiento_id)
+        if orm_req is None:
+            return None
+        estado_anterior = orm_req.estado
+        RequirementService.archivar(orm_req, rol_usuario)
+        db.commit()
+        db.refresh(orm_req)
+        RequirementRepository.guardar_cambio_estado(
+            db,
+            requerimiento_id=requerimiento_id,
+            usuario_id=usuario_id,
+            rol_usuario=rol_usuario,
+            estado_anterior=estado_anterior,
+            estado_nuevo="Archivado",
+        )
+        return orm_req
 
     @staticmethod
     def actualizar_estado(

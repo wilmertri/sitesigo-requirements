@@ -7,7 +7,11 @@ from app.models.requirement import EstadoRequerimiento, Requerimiento, RolUsuari
 from app.schemas.requirement_schema import RequirementCreate
 from app.services.notification_service import NotificationService
 
-_ESTADOS_TERMINALES = {EstadoRequerimiento.cerrado, EstadoRequerimiento.rechazado}
+_ESTADOS_TERMINALES = {
+    EstadoRequerimiento.cerrado,
+    EstadoRequerimiento.rechazado,
+    EstadoRequerimiento.archivado,
+}
 
 
 class RequirementService:
@@ -83,6 +87,15 @@ class RequirementService:
                 )
             except Exception:
                 pass
+        return requerimiento
+
+    @staticmethod
+    def archivar(requerimiento, rol_usuario) -> Requerimiento:
+        if rol_usuario != RolUsuario.administrador:
+            raise PermissionError("Solo el Administrador puede archivar requerimientos")
+        if requerimiento.estado == EstadoRequerimiento.archivado:
+            raise ValueError("El requerimiento ya esta archivado")
+        requerimiento.estado = EstadoRequerimiento.archivado
         return requerimiento
 
     @staticmethod
