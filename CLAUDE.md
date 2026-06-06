@@ -177,11 +177,25 @@ para implementar: [nombre de la regla RN-XX]"
   DELETE /requerimientos/{id} (200/403/404/422)
   ArchivarBody en api_schemas.py
   tests/unit/test_archivar.py: 4 tests nuevos
-  test_repository.py: 1 test nuevo (test_archivado_no_aparece_en_listado_normal)
+  test_repository.py: 1 test nuevo
+  ADR-006: StaticPool para tests de integracion
   Total: 40 tests en verde
 
-### Pendiente - siguiente ciclo TDD
-- Autenticacion JWT con roles (RolUsuario en token)
+## Endpoints implementados y funcionando
+- POST   /requerimientos              (crear)
+- GET    /requerimientos              (listar con filtros estado/tipo/prioridad)
+- PATCH  /requerimientos/{id}/estado  (cambiar estado, solo Admin)
+- DELETE /requerimientos/{id}         (archivar, solo Admin)
+
+### Pendiente - siguiente ciclo TDD (JWT)
+Instalar: python-jose, passlib, bcrypt
+- app/auth/jwt_handler.py: generacion y validacion de tokens
+- app/auth/dependencies.py: Depends(get_current_user)
+- POST /auth/token (login, devuelve JWT)
+- POST /auth/usuarios (registro)
+- Proteger todos los endpoints con Depends(get_current_user)
+- Eliminar rol_usuario del body — el rol viaja en el token
+- Tests de autenticacion en tests/integration/
 
 ### Pendiente - ciclos siguientes
 - Escenarios Gherkin ejecutables (behave)
