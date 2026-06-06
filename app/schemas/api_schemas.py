@@ -48,3 +48,18 @@ class RequirementResponse(BaseModel):
             autor_email=req.autor_email,
             creado_en=req.creado_en,
         )
+
+    @classmethod
+    def from_orm_model(cls, req) -> "RequirementResponse":
+        return cls(
+            id=req.id,
+            titulo=req.titulo,
+            descripcion=req.descripcion,
+            tipo=req.tipo,
+            prioridad=req.prioridad,
+            estado=req.estado,
+            autor_id=req.autor_id,
+            autor_rol=req.autor_rol,
+            autor_email=req.autor_email,
+            creado_en=req.creado_en,
+        )
