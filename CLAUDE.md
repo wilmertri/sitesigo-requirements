@@ -154,13 +154,17 @@ para implementar: [nombre de la regla RN-XX]"
   5 tests de integracion nuevos
   Total: 31 tests en verde (26 unit + 5 integration)
 
-- Persistencia SQLAlchemy (app/database.py + app/models/requirement_db.py)
-  RequerimientooDB y CambioEstadoDB como modelos ORM
-  app/repositories/requirement_repository.py
+- Persistencia SQLAlchemy
+  app/database.py: engine SQLite + SessionLocal + get_db
+  app/models/requirement_db.py: RequerimientooDB y CambioEstadoDB
+  app/repositories/requirement_repository.py: crear, listar,
+    obtener_por_id, actualizar_estado, guardar_cambio_estado
+  app/schemas/api_schemas.py: from_orm_model() para ORM objects
   GET /requerimientos con filtros reales (estado, tipo, prioridad)
+  tests/integration/conftest.py: StaticPool para SQLite in-memory
   tests/integration/test_repository.py: 4 tests nuevos
-  conftest.py: StaticPool para SQLite in-memory (ADR pendiente)
-  Total: 35 tests en verde (31 unit+integration + 4 repositorio)
+  ADR-006 (StaticPool en tests de integracion)
+  Total: 35 tests en verde
 
 ### Pendiente - siguiente ciclo TDD
 - Autenticacion JWT con roles (RolUsuario en token)
