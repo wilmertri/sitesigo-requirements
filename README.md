@@ -1,5 +1,7 @@
 # Gestor de Requerimientos SITESIGO
 
+![Tests](https://github.com/wilmertri/sitesigo-requirements/actions/workflows/tests.yml/badge.svg)
+
 Sistema para gestionar requerimientos de software
 construido con un pipeline TDD asistido por agentes
 de IA (Claude Code).
