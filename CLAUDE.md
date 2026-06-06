@@ -166,6 +166,20 @@ para implementar: [nombre de la regla RN-XX]"
   ADR-006 (StaticPool en tests de integracion)
   Total: 35 tests en verde
 
+- Borrado logico con estado Archivado
+  RN-08: solo Admin puede archivar
+  RN-09: archivado queda registrado en historial
+  RN-10: archivados excluidos del listado normal por defecto
+  EstadoRequerimiento.archivado como estado terminal
+  RequirementService.archivar() con duck typing ORM→service
+  RequirementRepository.archivar(): persiste + historial
+  RequirementRepository.listar(): excluye Archivados por defecto
+  DELETE /requerimientos/{id} (200/403/404/422)
+  ArchivarBody en api_schemas.py
+  tests/unit/test_archivar.py: 4 tests nuevos
+  test_repository.py: 1 test nuevo (test_archivado_no_aparece_en_listado_normal)
+  Total: 40 tests en verde
+
 ### Pendiente - siguiente ciclo TDD
 - Autenticacion JWT con roles (RolUsuario en token)
 
