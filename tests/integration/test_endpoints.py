@@ -1,0 +1,64 @@
+# -*- coding: utf-8 -*-
+from fastapi.testclient import TestClient
+
+_BODY_VALIDO = {
+    "titulo": "Modulo de login",
+    "descripcion": "Autenticacion con email y password",
+    "tipo": "Nueva funcionalidad",
+    "prioridad": "Alta",
+    "autor_id": 10,
+    "autor_rol": "funcionario",
+    "autor_email": "funcionario@chia.gov.co",
+}
+
+
+def test_crear_requerimiento_valido_devuelve_201(client: TestClient):
+    response = client.post("/requerimientos", json=_BODY_VALIDO)
+    assert response.status_code == 201
+    data = response.json()
+    assert "id" in data
+    assert data["titulo"] == "Modulo de login"
+    assert data["estado"] == "nuevo"
+
+
+def test_crear_requerimiento_sin_titulo_devuelve_422(client: TestClient):
+    body = {k: v for k, v in _BODY_VALIDO.items() if k != "titulo"}
+    response = client.post("/requerimientos", json=body)
+    assert response.status_code == 422
+
+
+def test_listar_requerimientos_devuelve_200(client: TestClient):
+    response = client.get("/requerimientos")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+def test_cambiar_estado_como_admin_devuelve_200(client: TestClient):
+    create_resp = client.post("/requerimientos", json=_BODY_VALIDO)
+    req_id = create_resp.json()["id"]
+
+    response = client.patch(
+        f"/requerimientos/{req_id}/estado",
+        json={
+            "nuevo_estado": "en_analisis",
+            "usuario_id": 99,
+            "rol_usuario": "administrador",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["estado"] == "en_analisis"
+
+
+def test_cambiar_estado_como_funcionario_devuelve_403(client: TestClient):
+    create_resp = client.post("/requerimientos", json=_BODY_VALIDO)
+    req_id = create_resp.json()["id"]
+
+    response = client.patch(
+        f"/requerimientos/{req_id}/estado",
+        json={
+            "nuevo_estado": "en_analisis",
+            "usuario_id": 10,
+            "rol_usuario": "funcionario",
+        },
+    )
+    assert response.status_code == 403

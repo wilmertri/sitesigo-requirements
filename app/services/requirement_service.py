@@ -1,12 +1,46 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from typing import ClassVar
+
 from app.models.history import CambioEstado
 from app.models.requirement import EstadoRequerimiento, Requerimiento, RolUsuario
+from app.schemas.requirement_schema import RequirementCreate
 from app.services.notification_service import NotificationService
 
 _ESTADOS_TERMINALES = {EstadoRequerimiento.cerrado, EstadoRequerimiento.rechazado}
 
 
 class RequirementService:
+    _store: ClassVar[list] = []
+    _next_id: ClassVar[int] = 1
+
+    @staticmethod
+    def crear(
+        datos: RequirementCreate,
+        autor_id: int,
+        autor_rol: RolUsuario,
+        autor_email: str = "",
+    ) -> Requerimiento:
+        req = Requerimiento(
+            id=RequirementService._next_id,
+            titulo=datos.titulo,
+            descripcion=datos.descripcion,
+            tipo=datos.tipo,
+            prioridad=datos.prioridad,
+            autor_id=autor_id,
+            autor_rol=autor_rol,
+            autor_email=autor_email,
+            creado_en=datetime.now(),
+        )
+        RequirementService._store.append(req)
+        RequirementService._next_id += 1
+        return req
+
+    @staticmethod
+    def obtener_por_id(req_id: int) -> Requerimiento | None:
+        return next(
+            (r for r in RequirementService._store if r.id == req_id), None
+        )
 
     @staticmethod
     def _verificar_no_terminal(requerimiento: Requerimiento, accion: str) -> None:
