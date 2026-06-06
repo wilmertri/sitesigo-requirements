@@ -22,7 +22,7 @@ class RequirementRepository:
             descripcion=datos.descripcion,
             tipo=datos.tipo.value,
             prioridad=datos.prioridad.value,
-            estado="nuevo",
+            estado="Nuevo",
             autor_id=autor_id,
             autor_rol=autor_rol,
             autor_email=autor_email,

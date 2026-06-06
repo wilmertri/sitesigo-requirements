@@ -44,7 +44,7 @@ def test_crear_requerimiento_persiste_en_db(db):
     assert recuperado.prioridad == "Alta"
     assert recuperado.autor_id == 1
     assert recuperado.autor_email == "a@b.com"
-    assert recuperado.estado == "nuevo"
+    assert recuperado.estado == "Nuevo"
 
 
 def test_listar_sin_filtros_devuelve_todos(db):
@@ -81,9 +81,9 @@ def test_listar_filtrado_por_estado(db):
     req_analisis = RequirementRepository.crear(
         db, datos_analisis, autor_id=1, autor_rol="administrador"
     )
-    RequirementRepository.actualizar_estado(db, req_analisis, "en_analisis")
+    RequirementRepository.actualizar_estado(db, req_analisis, "En analisis")
 
-    nuevos = RequirementRepository.listar(db, estado="nuevo")
+    nuevos = RequirementRepository.listar(db, estado="Nuevo")
 
     assert len(nuevos) == 2
 
@@ -98,8 +98,8 @@ def test_guardar_cambio_estado_crea_historial(db):
         requerimiento_id=req.id,
         usuario_id=99,
         rol_usuario="administrador",
-        estado_anterior="nuevo",
-        estado_nuevo="en_analisis",
+        estado_anterior="Nuevo",
+        estado_nuevo="En analisis",
     )
 
     historial = (
@@ -109,7 +109,7 @@ def test_guardar_cambio_estado_crea_historial(db):
     )
 
     assert len(historial) == 1
-    assert historial[0].estado_anterior == "nuevo"
-    assert historial[0].estado_nuevo == "en_analisis"
+    assert historial[0].estado_anterior == "Nuevo"
+    assert historial[0].estado_nuevo == "En analisis"
     assert historial[0].usuario_id == 99
     assert historial[0].rol_usuario == "administrador"

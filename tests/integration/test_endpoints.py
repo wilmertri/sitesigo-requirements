@@ -18,7 +18,7 @@ def test_crear_requerimiento_valido_devuelve_201(client: TestClient):
     data = response.json()
     assert "id" in data
     assert data["titulo"] == "Modulo de login"
-    assert data["estado"] == "nuevo"
+    assert data["estado"] == "Nuevo"
 
 
 def test_crear_requerimiento_sin_titulo_devuelve_422(client: TestClient):
@@ -40,13 +40,13 @@ def test_cambiar_estado_como_admin_devuelve_200(client: TestClient):
     response = client.patch(
         f"/requerimientos/{req_id}/estado",
         json={
-            "nuevo_estado": "en_analisis",
+            "nuevo_estado": "En analisis",
             "usuario_id": 99,
             "rol_usuario": "administrador",
         },
     )
     assert response.status_code == 200
-    assert response.json()["estado"] == "en_analisis"
+    assert response.json()["estado"] == "En analisis"
 
 
 def test_cambiar_estado_como_funcionario_devuelve_403(client: TestClient):
@@ -56,7 +56,7 @@ def test_cambiar_estado_como_funcionario_devuelve_403(client: TestClient):
     response = client.patch(
         f"/requerimientos/{req_id}/estado",
         json={
-            "nuevo_estado": "en_analisis",
+            "nuevo_estado": "En analisis",
             "usuario_id": 10,
             "rol_usuario": "funcionario",
         },

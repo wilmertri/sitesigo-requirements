@@ -14,7 +14,7 @@ class RequerimientooDB(Base):
     descripcion = Column(Text, nullable=False)
     tipo = Column(String(50), nullable=False)
     prioridad = Column(String(20), nullable=False)
-    estado = Column(String(30), nullable=False, default="nuevo")
+    estado = Column(String(30), nullable=False, default="Nuevo")
     autor_id = Column(Integer, nullable=False)
     autor_rol = Column(String(30), nullable=False)
     autor_email = Column(String(100), default="")

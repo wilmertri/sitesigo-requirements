@@ -19,12 +19,12 @@ class RolUsuario(str, Enum):
 
 
 class EstadoRequerimiento(str, Enum):
-    nuevo = "nuevo"
-    en_analisis = "en_analisis"
-    en_desarrollo = "en_desarrollo"
-    resuelto = "resuelto"
-    cerrado = "cerrado"
-    rechazado = "rechazado"
+    nuevo = "Nuevo"
+    en_analisis = "En analisis"
+    en_desarrollo = "En desarrollo"
+    resuelto = "Resuelto"
+    cerrado = "Cerrado"
+    rechazado = "Rechazado"
 
 
 @dataclass
