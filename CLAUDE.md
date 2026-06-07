@@ -214,6 +214,11 @@ para implementar: [nombre de la regla RN-XX]"
 - PATCH  /requerimientos/{id}/estado  (cambiar estado, requiere JWT Admin)
 - DELETE /requerimientos/{id}         (archivar, requiere JWT Admin)
 
+- Docker y docker-compose
+  Dockerfile: python:3.13-slim con gcc + libpq-dev
+  docker-compose.yml: api + PostgreSQL 16-alpine
+  .dockerignore, .env.example
+  Build verificado, 50 tests en verde dentro del contenedor
+
 ### Pendiente - siguiente ciclo TDD
-- Docker
 - Frontend (Vue 3 + Vite)
