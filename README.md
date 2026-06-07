@@ -1,4 +1,4 @@
-# Gestor de Requerimientos SITESIGO
+# ReqFlow — Gestor de Requerimientos
 
 ![Tests](https://github.com/wilmertri/sitesigo-requirements/actions/workflows/tests.yml/badge.svg)
 
@@ -10,17 +10,9 @@ Base URL: https://sitesigo-requirements-production.up.railway.app
 - ReDoc: https://sitesigo-requirements-production.up.railway.app/redoc
 - Health check: https://sitesigo-requirements-production.up.railway.app/health
 
-Sistema para gestionar requerimientos de software
-construido con un pipeline TDD asistido por agentes
-de IA (Claude Code).
-
-## Contexto
-
-SITESIGO es el sistema de seguimiento al Plan de
-Desarrollo Municipal de Chia, Colombia (Laravel/PHP).
-Este gestor centraliza los requerimientos que antes
-vivian dispersos en hojas de calculo, sin trazabilidad
-ni ciclo de vida definido.
+Herramienta independiente para gestionar requerimientos
+de cualquier proyecto de software, construida con un
+pipeline TDD asistido por agentes de IA (Claude Code).
 
 ## Stack
 
@@ -51,7 +43,7 @@ y sus tests antes de existir como codigo.
 | RN-06 | Prioridad solo Alta / Media / Baja         | (en RN-01) |
 | RN-07 | Estados Cerrado y Rechazado son terminales | 3          |
 
-Total: 26 tests - 0 fallos
+Total: 50 tests — 0 fallos
 
 ## Actores
 
@@ -72,10 +64,10 @@ app/
   models/       entidades de dominio
   schemas/      validacion Pydantic
   services/     logica de negocio
-  routers/      endpoints FastAPI (proximo)
+  routers/      endpoints FastAPI
 tests/
   unit/         tests de schemas y services
-  integration/  tests de endpoints (proximo)
+  integration/  tests de endpoints
 features/       escenarios Gherkin (behave)
 agents/         prompts base de los agentes IA
 specs/          especificacion formal
@@ -130,7 +122,7 @@ y dime en que punto esta el proyecto.
 - [x] Deploy en Railway (produccion)
 - [x] PostgreSQL en produccion (Neon via Railway)
 - [x] CI/CD automatico con GitHub Actions
-- [ ] Escenarios Gherkin ejecutables con behave
+- [x] Escenarios Gherkin ejecutables con behave
 - [ ] Frontend Vue 3 + Vite
 
 ## Licencia

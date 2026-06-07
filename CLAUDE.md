@@ -1,16 +1,15 @@
-﻿# sitesigo-requeriments
+﻿# ReqFlow
 
 ## Que es este proyecto
-App para gestionar requerimientos de SITESIGO
-(sistema de seguimiento al Plan de Desarrollo
-Municipal de Chia, Colombia).
+Herramienta SaaS independiente para gestionar
+requerimientos de cualquier proyecto de software.
 Stack: Python 3.13, FastAPI, SQLAlchemy, 
 Pydantic v2, pytest, behave.
 
 ## Actores
-- Administrador (Fabian): gestion completa de 
+- Administrador: gestion completa de 
   requerimientos, unico que cambia estados
-- Funcionario (Alcaldia de Chia): crea requerimientos,
+- Funcionario: crea requerimientos,
   ve todos en modo lectura, edita solo los suyos 
   en estado Nuevo
 - Equipo tecnico: ve todos, agrega comentarios,

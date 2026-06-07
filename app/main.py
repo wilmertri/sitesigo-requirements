@@ -13,8 +13,8 @@ from app.routers import auth, requirements
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Gestor de Requerimientos SITESIGO",
-    description="API para gestionar requerimientos de SITESIGO",
+    title="ReqFlow API",
+    description="API para gestion de requerimientos de software",
     version="0.1.0",
 )
 
