@@ -2,6 +2,14 @@
 
 ![Tests](https://github.com/wilmertri/sitesigo-requirements/actions/workflows/tests.yml/badge.svg)
 
+## API en Produccion
+
+Base URL: https://sitesigo-requirements-production.up.railway.app
+
+- Documentacion Swagger: https://sitesigo-requirements-production.up.railway.app/docs
+- ReDoc: https://sitesigo-requirements-production.up.railway.app/redoc
+- Health check: https://sitesigo-requirements-production.up.railway.app/health
+
 Sistema para gestionar requerimientos de software
 construido con un pipeline TDD asistido por agentes
 de IA (Claude Code).
@@ -117,12 +125,13 @@ y dime en que punto esta el proyecto.
 - [x] Schemas con validacion Pydantic
 - [x] Modelos de dominio
 - [x] Servicios con logica de negocio (RN-01 a RN-07)
-- [ ] Endpoints FastAPI
+- [x] Endpoints FastAPI
+- [x] Autenticacion JWT con roles
+- [x] Deploy en Railway (produccion)
+- [x] PostgreSQL en produccion (Neon via Railway)
+- [x] CI/CD automatico con GitHub Actions
 - [ ] Escenarios Gherkin ejecutables con behave
-- [ ] Autenticacion JWT con roles
 - [ ] Frontend Vue 3 + Vite
-- [ ] Docker + GitHub Actions
-- [ ] PostgreSQL en produccion
 
 ## Licencia
 
