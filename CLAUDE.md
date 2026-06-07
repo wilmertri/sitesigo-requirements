@@ -208,8 +208,9 @@ para implementar: [nombre de la regla RN-XX]"
 - POST   /auth/registro               (registro de usuario)
 - POST   /auth/token                  (login OAuth2, devuelve JWT)
 - GET    /auth/me                     (datos del usuario autenticado)
-- POST   /requerimientos/             (crear, requiere JWT)
-- GET    /requerimientos/             (listar con filtros, publico)
+- POST   /requerimientos[/]           (crear, requiere JWT)
+- GET    /requerimientos[/]           (listar con filtros, publico)
+- GET    /requerimientos/{id}         (detalle con historial, requiere JWT)
 - PATCH  /requerimientos/{id}/estado  (cambiar estado, requiere JWT Admin)
 - DELETE /requerimientos/{id}         (archivar, requiere JWT Admin)
 
@@ -219,5 +220,26 @@ para implementar: [nombre de la regla RN-XX]"
   .dockerignore, .env.example
   Build verificado, 50 tests en verde dentro del contenedor
 
+- GET /requerimientos/{id} con historial
+  RequirementRepository.obtener_detalle(): retorna dict con
+  todos los campos + historial ordenado por fecha ascendente
+  2 tests nuevos
+  Total: 52 tests en verde
+
+- Configuracion de produccion
+  redirect_slashes=False en FastAPI (evita 307 en clientes sin slash)
+  Doble registro de endpoints POST y GET de coleccion:
+    @router.post("") + @router.post("/")
+    @router.get("") + @router.get("/")
+  CORS configurado con ALLOWED_ORIGINS desde variable de entorno
+  Deploy completo en Railway con PostgreSQL
+  Frontend conectado y funcionando en produccion
+
+## URLs de produccion
+- Frontend: https://reqflow-requirements-frontend.vercel.app
+- Backend:  https://sitesigo-requirements-production.up.railway.app
+- Swagger:  https://sitesigo-requirements-production.up.railway.app/docs
+- Health:   https://sitesigo-requirements-production.up.railway.app/health
+
 ### Pendiente - siguiente ciclo TDD
-- Frontend (Vue 3 + Vite)
+- Ninguno (sistema en produccion)
