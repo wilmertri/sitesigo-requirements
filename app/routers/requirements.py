@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -51,7 +52,8 @@ def crear_requerimiento(
             prioridad=body.prioridad,
         )
     except ValidationError as e:
-        raise HTTPException(status_code=422, detail=e.errors())
+        # e.errors() puede contener ValueError en ctx que no es JSON-serializable
+        raise HTTPException(status_code=422, detail=json.loads(e.json()))
 
     try:
         rol = RolUsuario(current_user["rol"])
