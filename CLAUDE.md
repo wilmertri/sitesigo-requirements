@@ -236,7 +236,7 @@ para implementar: [nombre de la regla RN-XX]"
   Frontend conectado y funcionando en produccion
 
 ## URLs de produccion
-- Frontend: https://reqflow-requirements-frontend.vercel.app
+- Frontend: https://reqflow-requirements.vercel.app
 - Backend:  https://sitesigo-requirements-production.up.railway.app
 - Swagger:  https://sitesigo-requirements-production.up.railway.app/docs
 - Health:   https://sitesigo-requirements-production.up.railway.app/health

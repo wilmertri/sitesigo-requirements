@@ -43,7 +43,7 @@ y sus tests antes de existir como codigo.
 | RN-06 | Prioridad solo Alta / Media / Baja         | (en RN-01) |
 | RN-07 | Estados Cerrado y Rechazado son terminales | 3          |
 
-Total: 50 tests — 0 fallos
+Total: 52 tests — 0 fallos
 
 ## Actores
 
@@ -123,7 +123,7 @@ y dime en que punto esta el proyecto.
 - [x] PostgreSQL en produccion (Neon via Railway)
 - [x] CI/CD automatico con GitHub Actions
 - [x] Escenarios Gherkin ejecutables con behave
-- [ ] Frontend Vue 3 + Vite
+- [x] Frontend Vue 3 + Vite (https://reqflow-requirements.vercel.app)
 
 ## Licencia
 
