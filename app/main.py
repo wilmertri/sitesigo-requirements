@@ -16,6 +16,7 @@ app = FastAPI(
     title="ReqFlow API",
     description="API para gestion de requerimientos de software",
     version="0.1.0",
+    redirect_slashes=False,
 )
 
 origins = os.getenv(
