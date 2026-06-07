@@ -196,6 +196,15 @@ para implementar: [nombre de la regla RN-XX]"
   tests/integration/test_auth_endpoints.py: 5 tests nuevos
   Total: 50 tests en verde
 
+- Gherkin ejecutable con behave
+  features/environment.py: setup con SQLite in-memory y StaticPool
+  features/requirements.feature: 6 escenarios (RN-01, RN-02, RN-07, RN-08)
+  features/steps/requirements_steps.py: 33 steps con re matcher
+  6 escenarios en verde
+  ADR-007: step matcher regex para strings vacios
+  ADR-008: serializacion Pydantic v2 con json.loads(e.json())
+  Total: 50 tests pytest + 6 escenarios behave
+
 ## Endpoints implementados y funcionando
 - POST   /auth/registro               (registro de usuario)
 - POST   /auth/token                  (login OAuth2, devuelve JWT)
@@ -206,6 +215,5 @@ para implementar: [nombre de la regla RN-XX]"
 - DELETE /requerimientos/{id}         (archivar, requiere JWT Admin)
 
 ### Pendiente - siguiente ciclo TDD
-- Escenarios Gherkin ejecutables (behave)
+- Docker
 - Frontend (Vue 3 + Vite)
-- Docker + GitHub Actions + PostgreSQL
