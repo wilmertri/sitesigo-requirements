@@ -181,23 +181,31 @@ para implementar: [nombre de la regla RN-XX]"
   ADR-006: StaticPool para tests de integracion
   Total: 40 tests en verde
 
+- Autenticacion JWT con roles
+  app/auth/jwt_handler.py: crear_token, verificar_token (python-jose)
+  app/auth/password_handler.py: hashear/verificar con bcrypt directo
+  app/auth/dependencies.py: get_current_user, require_admin
+  app/models/user_db.py: UsuarioDB SQLAlchemy (tabla usuarios)
+  app/repositories/user_repository.py: crear, obtener_por_email/id
+  app/schemas/auth_schemas.py: RegistroBody, TokenResponse, UsuarioResponse
+  app/routers/auth.py: POST /auth/registro, POST /auth/token, GET /auth/me
+  app/routers/requirements.py: Depends(get_current_user) en todos los endpoints
+  api_schemas.py: eliminados rol/usuario_id del body (viajan en token)
+  conftest.py: fixtures admin_token y funcionario_token
+  tests/unit/test_auth.py: 5 tests nuevos
+  tests/integration/test_auth_endpoints.py: 5 tests nuevos
+  Total: 50 tests en verde
+
 ## Endpoints implementados y funcionando
-- POST   /requerimientos              (crear)
-- GET    /requerimientos              (listar con filtros estado/tipo/prioridad)
-- PATCH  /requerimientos/{id}/estado  (cambiar estado, solo Admin)
-- DELETE /requerimientos/{id}         (archivar, solo Admin)
+- POST   /auth/registro               (registro de usuario)
+- POST   /auth/token                  (login OAuth2, devuelve JWT)
+- GET    /auth/me                     (datos del usuario autenticado)
+- POST   /requerimientos/             (crear, requiere JWT)
+- GET    /requerimientos/             (listar con filtros, publico)
+- PATCH  /requerimientos/{id}/estado  (cambiar estado, requiere JWT Admin)
+- DELETE /requerimientos/{id}         (archivar, requiere JWT Admin)
 
-### Pendiente - siguiente ciclo TDD (JWT)
-Instalar: python-jose, passlib, bcrypt
-- app/auth/jwt_handler.py: generacion y validacion de tokens
-- app/auth/dependencies.py: Depends(get_current_user)
-- POST /auth/token (login, devuelve JWT)
-- POST /auth/usuarios (registro)
-- Proteger todos los endpoints con Depends(get_current_user)
-- Eliminar rol_usuario del body — el rol viaja en el token
-- Tests de autenticacion en tests/integration/
-
-### Pendiente - ciclos siguientes
+### Pendiente - siguiente ciclo TDD
 - Escenarios Gherkin ejecutables (behave)
 - Frontend (Vue 3 + Vite)
 - Docker + GitHub Actions + PostgreSQL

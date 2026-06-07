@@ -11,20 +11,14 @@ class CrearRequirementBody(BaseModel):
     descripcion: str
     tipo: TipoRequerimiento
     prioridad: Prioridad
-    autor_id: int
-    autor_rol: str
-    autor_email: str = ""
 
 
 class CambiarEstadoBody(BaseModel):
     nuevo_estado: str
-    usuario_id: int
-    rol_usuario: str
 
 
 class ArchivarBody(BaseModel):
-    usuario_id: int
-    rol_usuario: str
+    pass
 
 
 class RequirementResponse(BaseModel):
