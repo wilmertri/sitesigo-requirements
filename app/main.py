@@ -17,3 +17,8 @@ app = FastAPI(
 
 app.include_router(auth.router)
 app.include_router(requirements.router)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "version": "0.1.0"}
