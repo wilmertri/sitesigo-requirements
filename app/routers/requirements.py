@@ -38,6 +38,7 @@ def _orm_a_dominio(orm_req: RequerimientooDB) -> Requerimiento:
     )
 
 
+@router.post("", status_code=201, response_model=RequirementResponse)
 @router.post("/", status_code=201, response_model=RequirementResponse)
 def crear_requerimiento(
     body: CrearRequirementBody,
@@ -70,6 +71,7 @@ def crear_requerimiento(
     return RequirementResponse.from_orm_model(orm_req)
 
 
+@router.get("", response_model=list[RequirementResponse])
 @router.get("/", response_model=list[RequirementResponse])
 def listar_requerimientos(
     estado: Optional[str] = Query(None),
