@@ -81,6 +81,18 @@ def listar_requerimientos(
     return [RequirementResponse.from_orm_model(r) for r in lista]
 
 
+@router.get("/{req_id}")
+def obtener_detalle_requerimiento(
+    req_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    detalle = RequirementRepository.obtener_detalle(db, req_id)
+    if detalle is None:
+        raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+    return detalle
+
+
 @router.patch("/{req_id}/estado", response_model=RequirementResponse)
 def cambiar_estado(
     req_id: int,

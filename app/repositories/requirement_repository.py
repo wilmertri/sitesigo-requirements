@@ -103,6 +103,41 @@ class RequirementRepository:
         return orm_req
 
     @staticmethod
+    def obtener_detalle(db: Session, req_id: int) -> dict | None:
+        orm_req = db.query(RequerimientooDB).filter(RequerimientooDB.id == req_id).first()
+        if orm_req is None:
+            return None
+        historial = (
+            db.query(CambioEstadoDB)
+            .filter(CambioEstadoDB.requerimiento_id == req_id)
+            .order_by(CambioEstadoDB.fecha.asc())
+            .all()
+        )
+        return {
+            "id": orm_req.id,
+            "titulo": orm_req.titulo,
+            "descripcion": orm_req.descripcion,
+            "tipo": orm_req.tipo,
+            "prioridad": orm_req.prioridad,
+            "estado": orm_req.estado,
+            "autor_id": orm_req.autor_id,
+            "autor_rol": orm_req.autor_rol,
+            "autor_email": orm_req.autor_email,
+            "creado_en": orm_req.creado_en,
+            "historial": [
+                {
+                    "id": c.id,
+                    "usuario_id": c.usuario_id,
+                    "rol_usuario": c.rol_usuario,
+                    "estado_anterior": c.estado_anterior,
+                    "estado_nuevo": c.estado_nuevo,
+                    "fecha": c.fecha,
+                }
+                for c in historial
+            ],
+        }
+
+    @staticmethod
     def actualizar_estado(
         db: Session,
         requerimiento: RequerimientooDB,

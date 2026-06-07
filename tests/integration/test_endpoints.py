@@ -57,3 +57,23 @@ def test_cambiar_estado_como_funcionario_devuelve_403(client: TestClient, funcio
         headers=_auth(funcionario_token),
     )
     assert response.status_code == 403
+
+
+def test_obtener_detalle_requerimiento_existente(
+    client: TestClient, admin_token: str, funcionario_token: str
+):
+    create_resp = client.post("/requerimientos/", json=_BODY_VALIDO, headers=_auth(funcionario_token))
+    req_id = create_resp.json()["id"]
+
+    response = client.get(f"/requerimientos/{req_id}", headers=_auth(admin_token))
+    assert response.status_code == 200
+    data = response.json()
+    assert "id" in data
+    assert "titulo" in data
+    assert "estado" in data
+    assert isinstance(data["historial"], list)
+
+
+def test_obtener_detalle_requerimiento_inexistente(client: TestClient, admin_token: str):
+    response = client.get("/requerimientos/9999", headers=_auth(admin_token))
+    assert response.status_code == 404
