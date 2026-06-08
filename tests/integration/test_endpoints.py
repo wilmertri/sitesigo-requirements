@@ -28,8 +28,8 @@ def test_crear_requerimiento_sin_titulo_devuelve_422(client: TestClient, funcion
     assert response.status_code == 422
 
 
-def test_listar_requerimientos_devuelve_200(client: TestClient):
-    response = client.get("/requerimientos/")
+def test_listar_requerimientos_devuelve_200(client: TestClient, admin_token: str):
+    response = client.get("/requerimientos/", headers=_auth(admin_token))
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 

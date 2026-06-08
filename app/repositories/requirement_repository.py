@@ -17,6 +17,7 @@ class RequirementRepository:
         autor_id: int,
         autor_rol: str,
         autor_email: str = "",
+        proyecto_id: Optional[int] = None,
     ) -> RequerimientooDB:
         orm_req = RequerimientooDB(
             titulo=datos.titulo,
@@ -28,6 +29,7 @@ class RequirementRepository:
             autor_rol=autor_rol,
             autor_email=autor_email,
             creado_en=datetime.now(timezone.utc),
+            proyecto_id=proyecto_id,
         )
         db.add(orm_req)
         db.commit()
@@ -44,8 +46,11 @@ class RequirementRepository:
         estado: Optional[str] = None,
         tipo: Optional[str] = None,
         prioridad: Optional[str] = None,
+        proyecto_id: Optional[int] = None,
     ) -> list[RequerimientooDB]:
         query = db.query(RequerimientooDB)
+        if proyecto_id is not None:
+            query = query.filter(RequerimientooDB.proyecto_id == proyecto_id)
         if estado:
             query = query.filter(RequerimientooDB.estado == estado)
         else:
@@ -124,6 +129,7 @@ class RequirementRepository:
             "autor_rol": orm_req.autor_rol,
             "autor_email": orm_req.autor_email,
             "creado_en": orm_req.creado_en,
+            "proyecto_id": orm_req.proyecto_id,
             "historial": [
                 {
                     "id": c.id,

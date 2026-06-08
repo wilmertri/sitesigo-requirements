@@ -5,65 +5,122 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.auth.jwt_handler import crear_token
+from app.auth.password_handler import hashear_password
 from app.database import Base, get_db
 from app.main import app
+from app.models.project_db import ProyectoDB, UsuarioProyectoDB  # noqa: F401
 from app.models.requirement_db import CambioEstadoDB, RequerimientooDB  # noqa: F401
 from app.models.user_db import UsuarioDB  # noqa: F401
 
 SQLALCHEMY_TEST_URL = "sqlite://"
 
-_ADMIN_DATA = {
-    "email": "admin@test.com",
-    "password": "admin123",
-    "nombre": "Admin Test",
-    "rol": "administrador",
-}
-
-_FUNCIONARIO_DATA = {
-    "email": "funcionario@test.com",
-    "password": "func123",
-    "nombre": "Funcionario Test",
-    "rol": "funcionario",
-}
-
 
 @pytest.fixture
-def client():
-    engine = create_engine(
+def engine():
+    eng = create_engine(
         SQLALCHEMY_TEST_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    Base.metadata.create_all(bind=engine)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    Base.metadata.create_all(bind=eng)
+    yield eng
+    Base.metadata.drop_all(bind=eng)
+
+
+@pytest.fixture
+def db(engine):
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session = Session()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+@pytest.fixture
+def client(engine):
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     def override_get_db():
-        db = TestingSessionLocal()
+        session = Session()
         try:
-            yield db
+            yield session
         finally:
-            db.close()
+            session.close()
 
     app.dependency_overrides[get_db] = override_get_db
     yield TestClient(app)
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(bind=engine)
 
 
-def _get_token(client: TestClient, user_data: dict) -> str:
-    client.post("/auth/registro", json=user_data)
-    resp = client.post(
-        "/auth/token",
-        data={"username": user_data["email"], "password": user_data["password"]},
+@pytest.fixture
+def admin_token(client, db) -> str:
+    admin = UsuarioDB(
+        email="admin@test.com",
+        hashed_password=hashear_password("admin123"),
+        rol="administrador",
+        nombre="Admin Test",
+        activo=True,
     )
-    return resp.json()["access_token"]
+    db.add(admin)
+    db.commit()
+    db.refresh(admin)
+
+    proyecto = ProyectoDB(
+        nombre="Proyecto Test",
+        descripcion="",
+        activo=True,
+        creado_por_id=admin.id,
+    )
+    db.add(proyecto)
+    db.commit()
+    db.refresh(proyecto)
+
+    db.add(UsuarioProyectoDB(
+        usuario_id=admin.id,
+        proyecto_id=proyecto.id,
+        rol="administrador",
+        activo=True,
+    ))
+    db.commit()
+
+    return crear_token({
+        "sub": str(admin.id),
+        "email": admin.email,
+        "rol": "administrador",
+        "nombre": admin.nombre,
+        "proyecto_id": proyecto.id,
+    })
 
 
 @pytest.fixture
-def admin_token(client: TestClient) -> str:
-    return _get_token(client, _ADMIN_DATA)
+def funcionario_token(client, db, admin_token) -> str:
+    proyecto = db.query(ProyectoDB).first()
 
+    func = UsuarioDB(
+        email="funcionario@test.com",
+        hashed_password=hashear_password("func123"),
+        rol="funcionario",
+        nombre="Funcionario Test",
+        activo=True,
+    )
+    db.add(func)
+    db.commit()
+    db.refresh(func)
 
-@pytest.fixture
-def funcionario_token(client: TestClient) -> str:
-    return _get_token(client, _FUNCIONARIO_DATA)
+    db.add(UsuarioProyectoDB(
+        usuario_id=func.id,
+        proyecto_id=proyecto.id,
+        rol="funcionario",
+        activo=True,
+    ))
+    db.commit()
+
+    return crear_token({
+        "sub": str(func.id),
+        "email": func.email,
+        "rol": "funcionario",
+        "nombre": func.nombre,
+        "proyecto_id": proyecto.id,
+    })

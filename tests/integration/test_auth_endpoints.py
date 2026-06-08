@@ -20,7 +20,9 @@ def test_registro_usuario_nuevo_devuelve_201(client: TestClient):
 
 def test_registro_email_duplicado_devuelve_400(client: TestClient):
     client.post("/auth/registro", json=_ADMIN)
-    response = client.post("/auth/registro", json=_ADMIN)
+    login = client.post("/auth/token", data={"username": _ADMIN["email"], "password": _ADMIN["password"]})
+    token = login.json()["access_token"]
+    response = client.post("/auth/registro", json=_ADMIN, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 400
 
 

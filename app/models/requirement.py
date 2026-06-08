@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class RolUsuario(str, Enum):
+    super_admin = "super_admin"
     administrador = "administrador"
     funcionario = "funcionario"
     equipo_tecnico = "equipo_tecnico"

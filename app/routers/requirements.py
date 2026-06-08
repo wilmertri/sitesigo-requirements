@@ -38,6 +38,13 @@ def _orm_a_dominio(orm_req: RequerimientooDB) -> Requerimiento:
     )
 
 
+def _proyecto_del_token(current_user: dict) -> int:
+    proyecto_id = current_user.get("proyecto_id")
+    if not proyecto_id:
+        raise HTTPException(status_code=403, detail="Se requiere contexto de proyecto en el token")
+    return proyecto_id
+
+
 @router.post("", status_code=201, response_model=RequirementResponse)
 @router.post("/", status_code=201, response_model=RequirementResponse)
 def crear_requerimiento(
@@ -45,6 +52,8 @@ def crear_requerimiento(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
+    proyecto_id = _proyecto_del_token(current_user)
+
     try:
         datos = RequirementCreate(
             titulo=body.titulo,
@@ -67,6 +76,7 @@ def crear_requerimiento(
         autor_id=int(current_user["sub"]),
         autor_rol=rol.value,
         autor_email=current_user.get("email", ""),
+        proyecto_id=proyecto_id,
     )
     return RequirementResponse.from_orm_model(orm_req)
 
@@ -78,8 +88,12 @@ def listar_requerimientos(
     tipo: Optional[str] = Query(None),
     prioridad: Optional[str] = Query(None),
     db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
 ):
-    lista = RequirementRepository.listar(db, estado=estado, tipo=tipo, prioridad=prioridad)
+    proyecto_id = current_user.get("proyecto_id")
+    lista = RequirementRepository.listar(
+        db, estado=estado, tipo=tipo, prioridad=prioridad, proyecto_id=proyecto_id
+    )
     return [RequirementResponse.from_orm_model(r) for r in lista]
 
 
@@ -92,6 +106,11 @@ def obtener_detalle_requerimiento(
     detalle = RequirementRepository.obtener_detalle(db, req_id)
     if detalle is None:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+
+    proyecto_id = current_user.get("proyecto_id")
+    if proyecto_id is not None and detalle.get("proyecto_id") != proyecto_id:
+        raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+
     return detalle
 
 
@@ -104,6 +123,10 @@ def cambiar_estado(
 ):
     orm_req = RequirementRepository.obtener_por_id(db, req_id)
     if orm_req is None:
+        raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+
+    proyecto_id = current_user.get("proyecto_id")
+    if proyecto_id is not None and orm_req.proyecto_id != proyecto_id:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
 
     try:
@@ -145,7 +168,12 @@ def archivar_requerimiento(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
-    if RequirementRepository.obtener_por_id(db, req_id) is None:
+    orm_req = RequirementRepository.obtener_por_id(db, req_id)
+    if orm_req is None:
+        raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
+
+    proyecto_id = current_user.get("proyecto_id")
+    if proyecto_id is not None and orm_req.proyecto_id != proyecto_id:
         raise HTTPException(status_code=404, detail="Requerimiento no encontrado")
 
     try:

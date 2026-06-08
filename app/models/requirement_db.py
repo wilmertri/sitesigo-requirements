@@ -19,6 +19,7 @@ class RequerimientooDB(Base):
     autor_rol = Column(String(30), nullable=False)
     autor_email = Column(String(100), default="")
     creado_en = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=False)
 
 
 class CambioEstadoDB(Base):

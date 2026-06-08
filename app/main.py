@@ -5,9 +5,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine
+from app.models.project_db import ProyectoDB, UsuarioProyectoDB  # noqa: F401
 from app.models.requirement_db import Base
-from app.models.user_db import UsuarioDB  # noqa: F401 — registra tabla usuarios
-from app.routers import auth, requirements
+from app.models.user_db import UsuarioDB  # noqa: F401
+from app.routers import auth, projects, requirements
 
 # Crear todas las tablas al iniciar
 Base.metadata.create_all(bind=engine)
@@ -33,6 +34,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(projects.router)
 app.include_router(requirements.router)
 
 
