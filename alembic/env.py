@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import os
 from logging.config import fileConfig
-
 from sqlalchemy import engine_from_config, pool
-
 from alembic import context
+import os
+import sys
 
-# Importar todos los modelos para que Alembic los detecte en autogenerate
-from app.database import Base  # noqa: F401
-from app.models.project_db import ProyectoDB, UsuarioProyectoDB  # noqa: F401
-from app.models.requirement_db import CambioEstadoDB, RequerimientooDB  # noqa: F401
-from app.models.user_db import UsuarioDB  # noqa: F401
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+from app.database import Base
+from app.models import requirement_db, user_db, project_db  # noqa: F401
 
 config = context.config
 
@@ -20,15 +18,14 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 
-def get_url() -> str:
-    url = os.getenv("DATABASE_URL", "sqlite:///./sitesigo.db")
-    # Railway entrega postgres:// en lugar de postgresql://
-    if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql://", 1)
-    return url
+def get_url():
+    return os.getenv(
+        "DATABASE_URL",
+        "sqlite:///./sitesigo.db"
+    ).replace("postgres://", "postgresql://", 1)
 
 
-def run_migrations_offline() -> None:
+def run_migrations_offline():
     url = get_url()
     context.configure(
         url=url,
@@ -40,8 +37,8 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def run_migrations_online() -> None:
-    configuration = config.get_section(config.config_ini_section, {})
+def run_migrations_online():
+    configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
     connectable = engine_from_config(
         configuration,
@@ -49,7 +46,10 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata
+        )
         with context.begin_transaction():
             context.run_migrations()
 
