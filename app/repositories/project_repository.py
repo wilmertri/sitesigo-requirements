@@ -4,6 +4,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.models.project_db import ProyectoDB, UsuarioProyectoDB
+from app.models.user_db import UsuarioDB
 
 
 class ProjectRepository:
@@ -52,15 +53,27 @@ class ProjectRepository:
         return membresia
 
     @staticmethod
-    def obtener_usuarios(db: Session, proyecto_id: int) -> list[UsuarioProyectoDB]:
-        return (
-            db.query(UsuarioProyectoDB)
+    def obtener_usuarios(db: Session, proyecto_id: int) -> list[dict]:
+        resultados = (
+            db.query(UsuarioProyectoDB, UsuarioDB.nombre, UsuarioDB.email)
+            .join(UsuarioDB, UsuarioProyectoDB.usuario_id == UsuarioDB.id)
             .filter(
                 UsuarioProyectoDB.proyecto_id == proyecto_id,
                 UsuarioProyectoDB.activo == True,  # noqa: E712
             )
             .all()
         )
+        return [
+            {
+                "usuario_id": r.UsuarioProyectoDB.usuario_id,
+                "proyecto_id": r.UsuarioProyectoDB.proyecto_id,
+                "rol": r.UsuarioProyectoDB.rol,
+                "activo": r.UsuarioProyectoDB.activo,
+                "nombre": r.nombre,
+                "email": r.email,
+            }
+            for r in resultados
+        ]
 
     @staticmethod
     def obtener_rol_usuario(

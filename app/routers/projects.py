@@ -69,6 +69,23 @@ def listar_proyectos(
     ]
 
 
+@router.get("/{proyecto_id}")
+def obtener_proyecto(
+    proyecto_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    proyecto = ProjectRepository.obtener_por_id(db, proyecto_id)
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    return {
+        "id": proyecto.id,
+        "nombre": proyecto.nombre,
+        "descripcion": proyecto.descripcion,
+        "activo": proyecto.activo,
+    }
+
+
 @router.post("/{proyecto_id}/usuarios", status_code=201)
 def agregar_usuario_a_proyecto(
     proyecto_id: int,
@@ -137,16 +154,7 @@ def obtener_usuarios_proyecto(
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
-    usuarios = ProjectRepository.obtener_usuarios(db, proyecto_id)
-    return [
-        {
-            "usuario_id": u.usuario_id,
-            "proyecto_id": u.proyecto_id,
-            "rol": u.rol,
-            "activo": u.activo,
-        }
-        for u in usuarios
-    ]
+    return ProjectRepository.obtener_usuarios(db, proyecto_id)
 
 
 def _enviar_bienvenida(email: str, nombre_proyecto: str) -> None:
