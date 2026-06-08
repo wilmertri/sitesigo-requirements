@@ -18,8 +18,12 @@ class NotificationService:
         nombre_proyecto: str = "ReqFlow",
         requerimiento_id: int = None,
     ) -> None:
+        print(f"[EMAIL] Intentando enviar a: {email_destinatario}")
+        print(f"[EMAIL] RESEND_API_KEY configurada: {bool(resend.api_key)}")
+        print(f"[EMAIL] API KEY primeros 8 chars: {resend.api_key[:8] if resend.api_key else 'VACIA'}")
+
         if not resend.api_key:
-            print("RESEND_API_KEY no configurada - email omitido")
+            print("[EMAIL] ERROR: RESEND_API_KEY no configurada")
             return
 
         link = ""
@@ -59,9 +63,13 @@ class NotificationService:
         </div>
         """
 
-        resend.Emails.send({
-            "from": "ReqFlow <onboarding@resend.dev>",
-            "to": email_destinatario,
-            "subject": f"[{nombre_proyecto}] Requerimiento actualizado: {estado_nuevo}",
-            "html": html,
-        })
+        try:
+            response = resend.Emails.send({
+                "from": "ReqFlow <onboarding@resend.dev>",
+                "to": email_destinatario,
+                "subject": f"[{nombre_proyecto}] Requerimiento actualizado: {estado_nuevo}",
+                "html": html,
+            })
+            print(f"[EMAIL] Enviado exitosamente: {response}")
+        except Exception as e:
+            print(f"[EMAIL] ERROR al enviar: {type(e).__name__}: {e}")
