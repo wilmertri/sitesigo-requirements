@@ -63,8 +63,13 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
         )
         .first()
     )
-    proyecto_id = membresia.proyecto_id if membresia else None
-    rol = membresia.rol if membresia else usuario.rol
+    # Super admin siempre mantiene su rol global
+    if usuario.rol == "super_admin":
+        rol = "super_admin"
+        proyecto_id = membresia.proyecto_id if membresia else None
+    else:
+        proyecto_id = membresia.proyecto_id if membresia else None
+        rol = membresia.rol if membresia else usuario.rol
 
     token = crear_token({
         "sub": str(usuario.id),
