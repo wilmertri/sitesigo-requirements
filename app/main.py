@@ -8,7 +8,7 @@ from app.database import engine
 from app.models.project_db import ProyectoDB, UsuarioProyectoDB  # noqa: F401
 from app.models.requirement_db import Base
 from app.models.user_db import UsuarioDB  # noqa: F401
-from app.routers import auth, projects, requirements
+from app.routers import auth, config, projects, requirements
 
 # Crear todas las tablas al iniciar
 Base.metadata.create_all(bind=engine)
@@ -34,6 +34,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(config.router)
 app.include_router(projects.router)
 app.include_router(requirements.router)
 
