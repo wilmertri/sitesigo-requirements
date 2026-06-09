@@ -1,4 +1,4 @@
-﻿# ReqFlow
+# ReqFlow
 
 ## Que es este proyecto
 Herramienta SaaS independiente para gestionar
@@ -7,11 +7,14 @@ Stack: Python 3.13, FastAPI, SQLAlchemy,
 Pydantic v2, pytest, behave.
 
 ## Actores
+- Super-Admin: unico que define campos y estados
+  por proyecto; tiene todos los permisos de Admin
 - Administrador: gestion completa de 
   requerimientos, unico que cambia estados
 - Funcionario: crea requerimientos,
-  ve todos en modo lectura, edita solo los suyos 
-  en estado Nuevo
+  ve SOLO sus propios requerimientos,
+  edita solo los suyos en estado Nuevo,
+  puede editar observaciones si no esta Cerrado/Rechazado
 - Equipo tecnico: ve todos, agrega comentarios,
   no cambia estado ni prioridad
 
@@ -27,12 +30,54 @@ Pydantic v2, pytest, behave.
 - RN-05: al cambiar estado se envia email al 
   creador si es Funcionario
 - RN-06: prioridad solo puede ser Alta, Media o Baja
-- RN-07: estados Cerrado y Rechazado son terminales,
-  no pueden cambiar
+- RN-07: estados Cerrado y Rechazado son terminales
+  en el ciclo base; no pueden cambiar
+- RN-08: solo Admin puede archivar un requerimiento
+- RN-09: el archivado queda registrado en historial
+- RN-10: archivados excluidos del listado normal por defecto
+- RN-20: solo Super-Admin define campos personalizados
+- RN-21: tipos soportados: texto, fecha, numero, lista
+- RN-22: dias_habiles se calcula automaticamente entre
+  fecha_inicio y fecha_final sin domingos ni festivos
+  colombianos (libreria holidays, ADR-011)
+- RN-23: solo Super-Admin define estados por proyecto
+- RN-24: cada proyecto tiene su propia lista de estados
+- RN-25: al crear un requerimiento aparecen los campos
+  y estados configurados para ese proyecto
+- RN-26: Funcionario ve solo sus propios requerimientos;
+  Admin ve todos los de su proyecto;
+  Super-Admin ve todos sin filtro de proyecto
+- RN-27: el creador puede editar el campo observaciones
+  si el estado no es Cerrado ni Rechazado (cualquier rol);
+  registra en historial como "Observaciones actualizadas"
 
 ## Ciclo de vida de estados
+### Estados base (enum fijo, todos los proyectos)
 Nuevo -> En analisis -> En desarrollo -> Resuelto -> Cerrado
 Desde cualquier estado -> Rechazado (solo Administrador)
+
+### Estados de proyecto (configurables, ADR-010)
+Cada proyecto define su propia lista en ProyectoConfigEstado.
+El campo estado_proyecto en RequerimientooDB es un string libre
+que referencia el nombre del estado configurado.
+Los estados base del enum NO se eliminan; coexisten con
+los estados de proyecto en campos separados.
+
+## Modelo de datos — tablas existentes
+- usuarios           (UsuarioDB)
+- proyectos          (tabla existente, ADR-009)
+- usuarios_proyectos (tabla existente, ADR-009)
+- requerimientos     (RequerimientooDB)
+- cambios_estado     (CambioEstadoDB)
+
+## Modelo de datos — tablas nuevas (campos configurables)
+- proyecto_config_campos   (ProyectoConfigCampoDB)
+  id, proyecto_id FK, nombre, clave, tipo,
+  opciones JSON, obligatorio, orden
+- proyecto_config_estados  (ProyectoConfigEstadoDB)
+  id, proyecto_id FK, nombre, color, orden, es_terminal
+- requerimiento_valor_campo (RequerimientoValorCampoDB)
+  id, requerimiento_id FK, campo_id FK, valor TEXT
 
 ## Convenciones de codigo
 - Siempre UTF-8 en todos los archivos
@@ -43,18 +88,27 @@ Desde cualquier estado -> Rechazado (solo Administrador)
 - Enums para valores de dominio cerrado
 - Nombres en español para el dominio de negocio,
   ingles para estructuras tecnicas
+- Casteo explicito de tipos en services/config_service.py
+  para campos tipo fecha, numero y lista (RN-21)
+- dias_habiles nunca se persiste; se calcula en
+  services/dias_habiles_service.py (RN-22, ADR-011)
 
 ## Estructura del proyecto
-app/schemas/       validacion Pydantic (RN-01, RN-06)
-app/services/      logica de negocio (RN-02 a RN-07)
-app/models/        entidades SQLAlchemy
-app/routers/       endpoints FastAPI
-tests/unit/        tests de schemas y services
-tests/integration/ tests de endpoints completos
-features/          escenarios Gherkin (behave)
-agents/            prompts base de cada agente IA
-specs/             especificacion formal del sistema
-docs/decisions/    Architecture Decision Records (ADRs)
+app/schemas/           validacion Pydantic (RN-01, RN-06)
+app/schemas/config_schemas.py  schemas de campos y estados
+app/services/          logica de negocio (RN-02 a RN-25)
+app/services/config_service.py      CRUD campos y estados
+app/services/dias_habiles_service.py calculo RN-22
+app/models/            entidades SQLAlchemy
+app/models/config_db.py  3 modelos ORM nuevos
+app/routers/           endpoints FastAPI
+app/routers/config.py  endpoints Super-Admin
+tests/unit/            tests de schemas y services
+tests/integration/     tests de endpoints completos
+features/              escenarios Gherkin (behave)
+agents/                prompts base de cada agente IA
+specs/                 especificacion formal del sistema
+docs/decisions/        Architecture Decision Records (ADRs)
 
 ## Como trabajar en este proyecto
 1. Leer la regla de negocio en specs/spec_formal.md
@@ -93,6 +147,7 @@ para implementar: [nombre de la regla RN-XX]"
 ### Especificacion y decisiones
 - specs/spec_formal.md → consultar antes de 
   implementar cualquier regla de negocio
+- specs/campos_configurables.md → spec de RN-20 a RN-25
 - docs/decisions/ADR-*.md → consultar cuando
   surja una duda arquitectonica
 
@@ -170,7 +225,7 @@ para implementar: [nombre de la regla RN-XX]"
   RN-09: archivado queda registrado en historial
   RN-10: archivados excluidos del listado normal por defecto
   EstadoRequerimiento.archivado como estado terminal
-  RequirementService.archivar() con duck typing ORM→service
+  RequirementService.archivar() con duck typing ORM->service
   RequirementRepository.archivar(): persiste + historial
   RequirementRepository.listar(): excluye Archivados por defecto
   DELETE /requerimientos/{id} (200/403/404/422)
@@ -209,10 +264,13 @@ para implementar: [nombre de la regla RN-XX]"
 - POST   /auth/token                  (login OAuth2, devuelve JWT)
 - GET    /auth/me                     (datos del usuario autenticado)
 - POST   /requerimientos[/]           (crear, requiere JWT)
-- GET    /requerimientos[/]           (listar con filtros, publico)
-- GET    /requerimientos/{id}         (detalle con historial, requiere JWT)
-- PATCH  /requerimientos/{id}/estado  (cambiar estado, requiere JWT Admin)
-- DELETE /requerimientos/{id}         (archivar, requiere JWT Admin)
+- GET    /requerimientos[/]                    (listar; Funcionario: solo propios, Admin: proyecto, SA: todos)
+- GET    /requerimientos/{id}                 (detalle con historial y valores_adicionales, requiere JWT)
+- PATCH  /requerimientos/{id}/estado          (cambiar estado, requiere JWT Admin)
+- PATCH  /requerimientos/{id}/estado-proyecto (cambiar estado configurable, requiere JWT Admin)
+- PUT    /requerimientos/{id}/valores         (upsert campos adicionales, creador o Admin)
+- PATCH  /requerimientos/{id}/observaciones   (editar observaciones, solo creador, no Cerrado/Rechazado)
+- DELETE /requerimientos/{id}                 (archivar, requiere JWT Admin)
 
 - Docker y docker-compose
   Dockerfile: python:3.13-slim con gcc + libpq-dev
@@ -241,5 +299,27 @@ para implementar: [nombre de la regla RN-XX]"
 - Swagger:  https://sitesigo-requirements-production.up.railway.app/docs
 - Health:   https://sitesigo-requirements-production.up.railway.app/health
 
-### Pendiente - siguiente ciclo TDD
-- Ninguno (sistema en produccion)
+### Completado — campos configurables y nuevas reglas
+- Migracion Alembic: proyecto_config_campos,
+  proyecto_config_estados, requerimiento_valor_campo,
+  estado_proyecto en requerimientos
+- app/models/config_db.py: 3 modelos ORM
+- app/schemas/config_schemas.py + api_schemas.py extendido
+- app/services/config_service.py + dias_habiles_service.py
+- app/repositories/config_repository.py
+- app/routers/config.py: endpoints Super-Admin
+- GET /requerimientos/{id} incluye valores_adicionales (JOIN)
+- valores_adicionales: dict[str, str | int | float]
+- RN-26: visibilidad por rol en GET /requerimientos
+  Funcionario → solo propios; Admin → proyecto; SA → todos
+  tests/integration/test_visibilidad.py: 3 tests
+- RN-27: PATCH /requerimientos/{id}/observaciones
+  Solo creador, bloquea Cerrado/Rechazado, registra historial
+  tests/integration/test_observaciones.py: 4 tests
+- Total: 132 tests pytest + 15 escenarios behave
+
+### Pendiente — FASE 2 Frontend
+  [ ] Vista configuracion de proyecto (Super-Admin)
+  [ ] Formulario nuevo requerimiento dinamico
+  [ ] Dashboard con campos del proyecto
+  [ ] Estados del proyecto en el timeline

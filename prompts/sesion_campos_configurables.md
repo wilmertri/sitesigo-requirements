@@ -11,6 +11,9 @@ Lee estos archivos en orden y confirma que entendiste:
 2. specs/spec_formal.md  
 3. specs/campos_configurables.md
 4. agents/tdd_agent.md
+5. docs/decisions/ADR-010.md
+6. docs/decisions/ADR-011.md
+7. docs/decisions/ADR-012.md
 
 Luego dime el estado actual del proyecto
 y arrancamos con la implementacion.
