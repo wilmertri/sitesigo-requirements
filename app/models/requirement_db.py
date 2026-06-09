@@ -20,6 +20,7 @@ class RequerimientooDB(Base):
     autor_email = Column(String(100), default="")
     creado_en = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     proyecto_id = Column(Integer, ForeignKey("proyectos.id"), nullable=True)
+    estado_proyecto = Column(String(100), nullable=True)
 
 
 class CambioEstadoDB(Base):

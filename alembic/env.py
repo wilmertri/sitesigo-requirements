@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from app.database import Base
-from app.models import requirement_db, user_db, project_db  # noqa: F401
+from app.models import requirement_db, user_db, project_db, config_db  # noqa: F401
 
 config = context.config
 
