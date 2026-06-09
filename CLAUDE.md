@@ -8,7 +8,8 @@ Pydantic v2, pytest, behave.
 
 ## Actores
 - Super-Admin: unico que define campos y estados
-  por proyecto; tiene todos los permisos de Admin
+  por proyecto; tiene todos los permisos de Admin;
+  ve requerimientos de todos los proyectos
 - Administrador: gestion completa de 
   requerimientos, unico que cambia estados
 - Funcionario: crea requerimientos,
@@ -46,9 +47,9 @@ Pydantic v2, pytest, behave.
   y estados configurados para ese proyecto
 - RN-26: Funcionario ve solo sus propios requerimientos;
   Admin ve todos los de su proyecto;
-  Super-Admin ve todos sin filtro de proyecto
-- RN-27: el creador puede editar el campo observaciones
-  si el estado no es Cerrado ni Rechazado (cualquier rol);
+  Super-Admin ve todos los de todos los proyectos
+- RN-27: el creador puede editar observaciones mientras
+  el estado no sea Cerrado ni Rechazado;
   registra en historial como "Observaciones actualizadas"
 
 ## Ciclo de vida de estados
@@ -310,16 +311,42 @@ para implementar: [nombre de la regla RN-XX]"
 - app/routers/config.py: endpoints Super-Admin
 - GET /requerimientos/{id} incluye valores_adicionales (JOIN)
 - valores_adicionales: dict[str, str | int | float]
+- Gherkin campos_configurables.feature: 9 escenarios nuevos
+  features/steps/campos_configurables_steps.py
+  15 escenarios behave en verde
+- Seed SITESIGO: scripts/seed_sitesigo.py
+  6 campos configurables, idempotente, acepta --proyecto-id
+
 - RN-26: visibilidad por rol en GET /requerimientos
-  Funcionario → solo propios; Admin → proyecto; SA → todos
+  RequirementRepository.listar() con parametros
+  autor_id_filtro y proyecto_id_filtro segun rol del token:
+    rol=funcionario → filtra por autor_id (solo propios)
+    rol=administrador → filtra por proyecto_id del token
+    rol=super_admin → sin filtros, ve todos los proyectos
   tests/integration/test_visibilidad.py: 3 tests
+
 - RN-27: PATCH /requerimientos/{id}/observaciones
-  Solo creador, bloquea Cerrado/Rechazado, registra historial
+  EditarObservacionesBody en api_schemas.py
+  Verifica que current_user sea el creador (403 si no)
+  Bloquea estados Cerrado y Rechazado (422)
+  Upsert en requerimiento_valor_campo clave="observaciones"
+  Registra en historial estado_nuevo="Observaciones actualizadas"
   tests/integration/test_observaciones.py: 4 tests
+
+- Correccion migracion idempotente (fix produccion)
+  df5aadffe6f2: ADD COLUMN proyecto_id solo si no existe
+  usando inspector.get_columns() y get_foreign_keys()
+  d1296f55e822: CREATE TABLE solo si no existe via
+  inspector.get_table_names(); ADD COLUMN estado_proyecto
+  solo si no existe
+
 - Total: 132 tests pytest + 15 escenarios behave
 
-### Pendiente — FASE 2 Frontend
-  [ ] Vista configuracion de proyecto (Super-Admin)
-  [ ] Formulario nuevo requerimiento dinamico
-  [ ] Dashboard con campos del proyecto
-  [ ] Estados del proyecto en el timeline
+### Pendiente
+- PUT    /proyectos/{proyecto_id}/campos/{campo_id}
+- DELETE /proyectos/{proyecto_id}/campos/{campo_id}
+- PUT    /proyectos/{proyecto_id}/estados/{estado_id}
+- DELETE /proyectos/{proyecto_id}/estados/{estado_id}
+- PATCH  /requerimientos/{id}/estado-proyecto
+  (Gherkin + tests de integracion pendientes)
+- Dockerfile frontend
