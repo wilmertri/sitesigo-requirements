@@ -77,3 +77,31 @@ def test_obtener_detalle_requerimiento_existente(
 def test_obtener_detalle_requerimiento_inexistente(client: TestClient, admin_token: str):
     response = client.get("/requerimientos/9999", headers=_auth(admin_token))
     assert response.status_code == 404
+
+
+def test_detalle_incluye_valores_adicionales(client: TestClient, db, admin_token: str, super_admin_token):
+    from app.models.project_db import ProyectoDB
+
+    sa_token, _ = super_admin_token
+    proyecto_id = db.query(ProyectoDB).filter(ProyectoDB.nombre == "Proyecto Test").first().id
+
+    auth_sa = {"Authorization": f"Bearer {sa_token}"}
+    client.post(
+        f"/proyectos/{proyecto_id}/campos",
+        json={"nombre": "Contrato", "clave": "contrato", "tipo": "texto"},
+        headers=auth_sa,
+    )
+
+    auth_admin = _auth(admin_token)
+    create_resp = client.post(
+        "/requerimientos/",
+        json={**_BODY_VALIDO, "valores_adicionales": {"contrato": "CNT-001"}},
+        headers=auth_admin,
+    )
+    req_id = create_resp.json()["id"]
+
+    response = client.get(f"/requerimientos/{req_id}", headers=auth_admin)
+    assert response.status_code == 200
+    data = response.json()
+    assert "valores_adicionales" in data
+    assert data["valores_adicionales"].get("contrato") == "CNT-001"

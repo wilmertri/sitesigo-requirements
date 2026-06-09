@@ -9,6 +9,7 @@ from app.auth.jwt_handler import crear_token
 from app.auth.password_handler import hashear_password
 from app.database import Base, get_db
 from app.main import app
+from app.models.config_db import ProyectoConfigCampoDB, ProyectoConfigEstadoDB, RequerimientoValorCampoDB  # noqa: F401
 from app.models.project_db import ProyectoDB, UsuarioProyectoDB  # noqa: F401
 from app.models.requirement_db import CambioEstadoDB, RequerimientooDB  # noqa: F401
 from app.models.user_db import UsuarioDB  # noqa: F401
@@ -92,6 +93,40 @@ def admin_token(client, db) -> str:
         "nombre": admin.nombre,
         "proyecto_id": proyecto.id,
     })
+
+
+@pytest.fixture
+def super_admin_token(client, db) -> tuple[str, int]:
+    """Devuelve (token, proyecto_id) para un usuario super_admin."""
+    sa = UsuarioDB(
+        email="superadmin@test.com",
+        hashed_password=hashear_password("sa123"),
+        rol="super_admin",
+        nombre="Super Admin Test",
+        activo=True,
+    )
+    db.add(sa)
+    db.commit()
+    db.refresh(sa)
+
+    proyecto = ProyectoDB(
+        nombre="Proyecto SA Test",
+        descripcion="",
+        activo=True,
+        creado_por_id=sa.id,
+    )
+    db.add(proyecto)
+    db.commit()
+    db.refresh(proyecto)
+
+    token = crear_token({
+        "sub": str(sa.id),
+        "email": sa.email,
+        "rol": "super_admin",
+        "nombre": sa.nombre,
+        "proyecto_id": proyecto.id,
+    })
+    return token, proyecto.id
 
 
 @pytest.fixture

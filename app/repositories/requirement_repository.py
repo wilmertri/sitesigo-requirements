@@ -4,6 +4,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app.models.config_db import ProyectoConfigCampoDB, RequerimientoValorCampoDB
 from app.models.requirement_db import CambioEstadoDB, RequerimientooDB
 from app.schemas.requirement_schema import RequirementCreate
 from app.services.requirement_service import RequirementService
@@ -47,10 +48,13 @@ class RequirementRepository:
         tipo: Optional[str] = None,
         prioridad: Optional[str] = None,
         proyecto_id: Optional[int] = None,
+        autor_id: Optional[int] = None,
     ) -> list[RequerimientooDB]:
         query = db.query(RequerimientooDB)
         if proyecto_id is not None:
             query = query.filter(RequerimientooDB.proyecto_id == proyecto_id)
+        if autor_id is not None:
+            query = query.filter(RequerimientooDB.autor_id == autor_id)
         if estado:
             query = query.filter(RequerimientooDB.estado == estado)
         else:
@@ -118,6 +122,13 @@ class RequirementRepository:
             .order_by(CambioEstadoDB.fecha.asc())
             .all()
         )
+        valores_rows = (
+            db.query(RequerimientoValorCampoDB, ProyectoConfigCampoDB)
+            .join(ProyectoConfigCampoDB, RequerimientoValorCampoDB.campo_id == ProyectoConfigCampoDB.id)
+            .filter(RequerimientoValorCampoDB.requerimiento_id == req_id)
+            .all()
+        )
+        valores_adicionales = {campo.clave: valor.valor for valor, campo in valores_rows}
         return {
             "id": orm_req.id,
             "titulo": orm_req.titulo,
@@ -130,6 +141,8 @@ class RequirementRepository:
             "autor_email": orm_req.autor_email,
             "creado_en": orm_req.creado_en,
             "proyecto_id": orm_req.proyecto_id,
+            "estado_proyecto": orm_req.estado_proyecto,
+            "valores_adicionales": valores_adicionales,
             "historial": [
                 {
                     "id": c.id,
@@ -142,6 +155,17 @@ class RequirementRepository:
                 for c in historial
             ],
         }
+
+    @staticmethod
+    def actualizar_estado_proyecto(
+        db: Session,
+        requerimiento: RequerimientooDB,
+        nuevo_estado_proyecto: str,
+    ) -> RequerimientooDB:
+        requerimiento.estado_proyecto = nuevo_estado_proyecto
+        db.commit()
+        db.refresh(requerimiento)
+        return requerimiento
 
     @staticmethod
     def actualizar_estado(
