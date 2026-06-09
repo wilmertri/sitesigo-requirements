@@ -22,9 +22,15 @@ def step_registrar_admin(context, email, password, rol):
 def step_registrar_funcionario(context, email, password, rol):
     context.funcionario_email = email
     context.funcionario_password = password
+    resp = context.client.post(
+        "/auth/token",
+        data={"username": context.sa_email, "password": context.sa_password},
+    )
+    sa_token = resp.json()["access_token"]
     context.client.post(
-        "/auth/registro",
-        json={"email": email, "password": password, "nombre": "Funcionario Test", "rol": rol},
+        f"/proyectos/{context.proyecto_id}/usuarios",
+        json={"email": email, "rol": rol, "nombre": "Funcionario Test", "password": password},
+        headers={"Authorization": f"Bearer {sa_token}"},
     )
 
 

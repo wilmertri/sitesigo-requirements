@@ -2,7 +2,9 @@
 Feature: Gestion de requerimientos SITESIGO
 
   Background:
-    Given que existe un usuario admin registrado con email "admin@test.com" y password "admin123" y rol "administrador"
+    Given que el primer usuario es super_admin con email "sa@req.com" y password "sa123"
+    And que el super_admin crea el proyecto "SITESIGO"
+    And que existe un admin en el proyecto con email "admin@test.com" y password "admin123"
 
   Scenario: Funcionario registra requerimiento valido
     Given que estoy autenticado como admin

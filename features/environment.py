@@ -9,16 +9,17 @@ from app.main import app
 
 
 def before_all(context):
-    engine = create_engine(
+    context._engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    Base.metadata.create_all(bind=engine)
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    context._SessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=context._engine
+    )
 
     def override_get_db():
-        db = TestingSessionLocal()
+        db = context._SessionLocal()
         try:
             yield db
         finally:
@@ -29,9 +30,12 @@ def before_all(context):
 
 
 def before_scenario(context, scenario):
+    Base.metadata.drop_all(bind=context._engine)
+    Base.metadata.create_all(bind=context._engine)
     context.response = None
     context.token = None
     context.requerimiento_id = None
+    context.proyecto_id = None
 
 
 def after_all(context):
